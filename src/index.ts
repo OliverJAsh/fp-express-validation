@@ -57,6 +57,31 @@ export type ResponseHandler<Response> = ((
     req: express.Request,
     res: express.Response,
 ) => (response: Response) => void);
+
+type ValidatedRequestHandler<Query, Session, Body, ErrorResponse, SuccessResponse> = ((
+    validatedReq: ValidatedRequest<Query, Session, Body>,
+) => Either<ErrorResponse, SuccessResponse>);
+export type wrapValidatedRequestHandler = (<Query, Session, Body, ErrorResponse, SuccessResponse>(
+    args: {
+        types: ValidatedRequestTypes<Query, Session, Body>;
+        handler: ValidatedRequestHandler<Query, Session, Body, ErrorResponse, SuccessResponse>;
+        errorResponseHandler: ResponseHandler<ErrorResponse>;
+        successResponseHandler: ResponseHandler<SuccessResponse>;
+        createValidationErrorsError: (validationErrors: t.ValidationError[]) => ErrorResponse;
+    },
+) => express.RequestHandler);
+export const wrapValidatedRequestHandler: wrapValidatedRequestHandler = ({
+    types,
+    errorResponseHandler,
+    successResponseHandler,
+    handler,
+    createValidationErrorsError,
+}) => (req, res) => {
+    validateReq({ req, types, createValidationErrorsError })
+        .chain(handler)
+        .fold(errorResponseHandler(req, res), successResponseHandler(req, res));
+};
+
 type AsyncValidatedRequestHandler<Query, Session, Body, ErrorResponse, SuccessResponse> = ((
     validatedReq: ValidatedRequest<Query, Session, Body>,
 ) => TaskEither<ErrorResponse, SuccessResponse>);
