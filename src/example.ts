@@ -1,3 +1,4 @@
+import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as session from 'express-session';
 import * as either from 'fp-ts/lib/Either';
@@ -5,19 +6,35 @@ import * as http from 'http';
 import * as t from 'io-ts';
 
 import { Either } from 'fp-ts/lib/Either';
-import { formatValidationErrors, NumberFromString } from './helpers/other';
+import {
+    composeTypes,
+    formatValidationErrors,
+    JSONFromString,
+    NumberFromString,
+} from './helpers/other';
 import { createValidatedRequestTypes, wrapValidatedRequestHandler } from './index';
 
 const app = express();
 app.use(session({ secret: 'foo' }));
+// We parse JSON using io-ts.
+app.use(bodyParser.text({ type: 'application/json' }));
 
 const requestTypes = createValidatedRequestTypes({
     session: t.interface({}),
-    body: t.undefined,
+    body: composeTypes(
+        JSONFromString,
+        t.interface({
+            name: t.string,
+        }),
+        'Body',
+    ),
     query: t.interface({
-        count: NumberFromString,
+        age: NumberFromString,
     }),
 });
+
+type ErrorResponse = string[];
+type SuccessResponse = { result: string };
 
 const requestHandler = wrapValidatedRequestHandler({
     // These values will be validated against their types. These also serve as static types for
@@ -28,22 +45,22 @@ const requestHandler = wrapValidatedRequestHandler({
 
     // After validation, we can use the validated request (session, body, query) to compute our
     // response.
-    handler: (validatedReq): Either<string[], number> =>
-        // Here the type checker knows that `query.count` is type `number`
-        either.right(validatedReq.query.count + 1),
+    handler: (validatedReq): Either<ErrorResponse, SuccessResponse> =>
+        // Here the type checker knows the type of our request’s session, body, and query objects.
+        // E.g. `body.name` is type `string` and `query.age` is type `number`.
+        either.right({ result: `name: ${validatedReq.body.name}, age: ${validatedReq.query.age}` }),
 
     // Once we've computed our response, we can inform Express so it can respond to the request.
     // In the future these could be incorporated into the return type of the `handler` function.
-    errorResponseHandler: (_req, res) => (errorResponse: string[]) => {
+    errorResponseHandler: (_req, res) => (errorResponse: ErrorResponse) => {
         res.status(500).send(errorResponse);
     },
-    successResponseHandler: (_req, res) => (successResponse: number) => {
-        const body = successResponse.toString();
-        res.status(200).send(body);
+    successResponseHandler: (_req, res) => (successResponse: SuccessResponse) => {
+        res.status(200).send(successResponse);
     },
 });
 
-app.get('/', requestHandler);
+app.post('/', requestHandler);
 
 const onListen = (server: http.Server) => {
     const { port } = server.address();
@@ -56,11 +73,20 @@ httpServer.listen(8080, () => {
     onListen(httpServer);
 });
 
-// ❯ curl -s "localhost:8080/"
-// ["Expecting NumberFromString at query.count but instead got: undefined."]
+// ❯ curl --request POST --silent "localhost:8080/" | jq '.'
+// [
+//   "Expecting NumberFromString at query.age but instead got: undefined.",
+//   "Expecting Body at body but instead got: {}."
+// ]
 
-// ❯ curl -s "localhost:8080/?count=foo"
-// ["Expecting NumberFromString at query.count but instead got: \"foo\"."]
+// ❯ curl --request POST --silent --header 'Content-Type: application/json' \
+//     --data '{ "name": "bob" }' "localhost:8080/?age=foo" | jq '.'
+// [
+//   "Expecting NumberFromString at query.age but instead got: \"foo\"."
+// ]
 
-// ❯ curl -s "localhost:8080/?count=1"
-// 2
+// ❯ curl --request POST --silent --header 'Content-Type: application/json' \
+//     --data '{ "name": "bob" }' "localhost:8080/?age=5" | jq '.'
+// {
+//   "result": "name: bob, age: 5"
+// }
