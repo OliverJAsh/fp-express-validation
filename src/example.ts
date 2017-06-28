@@ -1,13 +1,12 @@
 import * as express from 'express';
 import * as session from 'express-session';
 import * as either from 'fp-ts/lib/Either';
-import * as task from 'fp-ts/lib/Task';
 import * as http from 'http';
 import * as t from 'io-ts';
 
+import { Either } from 'fp-ts/lib/Either';
 import { formatValidationErrors, NumberFromString } from './helpers/other';
-import { TaskEither } from './helpers/TaskEither';
-import { createValidatedRequestTypes, wrapAsyncValidatedRequestHandler } from './index';
+import { createValidatedRequestTypes, wrapValidatedRequestHandler } from './index';
 
 const app = express();
 app.use(session({ secret: 'foo' }));
@@ -20,7 +19,7 @@ const requestTypes = createValidatedRequestTypes({
     }),
 });
 
-const requestHandler = wrapAsyncValidatedRequestHandler({
+const requestHandler = wrapValidatedRequestHandler({
     // These values will be validated against their types. These also serve as static types for
     // compile time type checking and auto completion.
     types: requestTypes,
@@ -29,9 +28,9 @@ const requestHandler = wrapAsyncValidatedRequestHandler({
 
     // After validation, we can use the validated request (session, body, query) to compute our
     // response.
-    handler: (validatedReq): TaskEither<string[], number> =>
+    handler: (validatedReq): Either<string[], number> =>
         // Here the type checker knows that `query.count` is type `number`
-        new TaskEither(task.of(either.right(validatedReq.query.count + 1))),
+        either.right(validatedReq.query.count + 1),
 
     // Once we've computed our response, we can inform Express so it can respond to the request.
     // In the future these could be incorporated into the return type of the `handler` function.
