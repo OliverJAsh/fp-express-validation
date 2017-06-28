@@ -63,5 +63,5 @@ httpServer.listen(8080, () => {
 // ❯ curl -s "localhost:8080/?count=foo"
 // ["Expecting NumberFromString at query.count but instead got: \"foo\"."]
 
-// ❯ curl -s "localhost:8080/?count=1" | jq '.'
+// ❯ curl -s "localhost:8080/?count=1"
 // 2
