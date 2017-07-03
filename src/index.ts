@@ -20,7 +20,7 @@ export type ValidatedRequestTypes<Query, Session, Body> = {
     session: t.Type<Session>;
     body: t.Type<Body>;
 };
-type ValidatedRequest<Query, Session, Body> = {
+export type ValidatedRequest<Query, Session, Body> = {
     ip: string;
     query: Query;
     session: Session;
@@ -58,7 +58,7 @@ export type ResponseHandler<Response> = ((
     res: express.Response,
 ) => (response: Response) => void);
 
-type ValidatedRequestHandler<Query, Session, Body, ErrorResponse, SuccessResponse> = ((
+export type ValidatedRequestHandler<Query, Session, Body, ErrorResponse, SuccessResponse> = ((
     validatedReq: ValidatedRequest<Query, Session, Body>,
 ) => Either<ErrorResponse, SuccessResponse>);
 export type wrapValidatedRequestHandler = (<Query, Session, Body, ErrorResponse, SuccessResponse>(
@@ -82,7 +82,7 @@ export const wrapValidatedRequestHandler: wrapValidatedRequestHandler = ({
         .fold(errorResponseHandler(req, res), successResponseHandler(req, res));
 };
 
-type AsyncValidatedRequestHandler<Query, Session, Body, ErrorResponse, SuccessResponse> = ((
+export type AsyncValidatedRequestHandler<Query, Session, Body, ErrorResponse, SuccessResponse> = ((
     validatedReq: ValidatedRequest<Query, Session, Body>,
 ) => TaskEither<ErrorResponse, SuccessResponse>);
 export type wrapAsyncValidatedRequestHandler = (<
