@@ -1,4 +1,4 @@
-# express-validated
+# fp-express-validation
 
 Validate Express requests (session, body, and query objects) using [io-ts].
 

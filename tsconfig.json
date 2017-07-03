@@ -13,10 +13,10 @@
         "outDir": "./target/",
         "plugins": [
             { "name": "tslint-language-service" }
-        ]
+        ],
+        "declaration": true
     },
     "files": [
-        "./src/index.ts",
-        "./src/example.ts"
+        "./src/index.ts"
     ]
 }

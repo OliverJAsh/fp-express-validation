@@ -1,12 +1,18 @@
 {
-  "name": "express-validation",
-  "private": true,
+  "name": "fp-express-validation",
+  "main": "./target/index.js",
+  "typings": "./target/index.d.ts",
+  "version": "0.0.0",
   "scripts": {
     "lint": "tslint --project tsconfig.json --type-check",
     "compile": "tsc",
-    "start": "yarn compile && yarn lint && node ./target/example.js",
-    "format": "prettier --write --tab-width 4 --print-width 100 --single-quote --trailing-comma all '!(target)/**/*.{ts,js}'"
+    "cleanTarget": "rm -rf ./target/*",
+    "prepublish": "npm run -s cleanTarget && npm run -s compile && npm run -s lint",
+    "format": "prettier --write --tab-width 4 --print-width 100 --single-quote --trailing-comma all 'src/**/*.ts'"
   },
+  "files": [
+    "target"
+  ],
   "dependencies": {
     "body-parser": "1.17.2",
     "express": "4.15.3",
