@@ -1,5 +1,5 @@
 {
-  "name": "express-validated",
+  "name": "express-validation",
   "private": true,
   "scripts": {
     "lint": "tslint --project tsconfig.json --type-check",
