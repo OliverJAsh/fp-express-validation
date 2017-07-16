@@ -1,7 +1,9 @@
 import * as express from 'express';
-import { Either } from 'fp-ts/lib/Either';
+import * as either from 'fp-ts/lib/Either';
 import * as task from 'fp-ts/lib/Task';
 import * as t from 'io-ts';
+
+import Either = either.Either;
 
 import { TaskEither } from './helpers/TaskEither';
 
