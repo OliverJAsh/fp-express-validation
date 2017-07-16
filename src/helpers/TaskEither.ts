@@ -38,8 +38,8 @@ export class TaskEither<L, A> {
     chain<B>(f: (a: A) => TaskEither<L, B>): TaskEither<L, B> {
         return new TaskEither(eitherTTask.chain(a => f(a).value, this.value));
     }
-    fold<R>(left: (l: L) => R, right: (a: A) => R): task.Task<R> {
-        return eitherT.fold(task)(left, right, this.value);
+    fold<R>(eitherLeft: (l: L) => R, eitherRight: (a: A) => R): task.Task<R> {
+        return eitherT.fold(task)(eitherLeft, eitherRight, this.value);
     }
     mapLeft<M>(f: (l: L) => M): TaskEither<M, A> {
         return new TaskEither(eitherT.mapLeft(task)(f, this.value));
