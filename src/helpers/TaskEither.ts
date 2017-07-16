@@ -29,10 +29,7 @@ export class TaskEither<L, A> {
     ap<B>(fab: TaskEither<L, (a: A) => B>): TaskEither<L, B> {
         return new TaskEither(eitherTTask.ap(fab.value, this.value));
     }
-    ap_<B, C>(
-        this: TaskEither<L, (a: B) => C>,
-        fb: TaskEither<L, B>,
-    ): TaskEither<L, C> {
+    ap_<B, C>(this: TaskEither<L, (a: B) => C>, fb: TaskEither<L, B>): TaskEither<L, C> {
         return fb.ap(this);
     }
     chain<B>(f: (a: A) => TaskEither<L, B>): TaskEither<L, B> {
@@ -49,10 +46,7 @@ export class TaskEither<L, A> {
     }
 }
 
-export function map<L, A, B>(
-    f: (a: A) => B,
-    fa: TaskEither<L, A>,
-): TaskEither<L, B> {
+export function map<L, A, B>(f: (a: A) => B, fa: TaskEither<L, A>): TaskEither<L, B> {
     return fa.map(f);
 }
 
@@ -92,10 +86,7 @@ export function fromPromise<L, A>(
 ): TaskEither<L, A> {
     return new TaskEither(
         new task.Task(() =>
-            f().then(
-                a => either.right<L, A>(a),
-                reason => either.left<L, A>(onrejected(reason)),
-            ),
+            f().then(a => either.right<L, A>(a), reason => either.left<L, A>(onrejected(reason))),
         ),
     );
 }
@@ -120,16 +111,8 @@ declare module 'fp-ts/lib/Functor' {
             functor: Functor<URI>,
             f: (a: A) => B,
         ): (fa: TaskEither<L, A>) => TaskEither<L, B>;
-        voidRight<L, A, B>(
-            functor: Functor<URI>,
-            a: A,
-            fb: TaskEither<L, B>,
-        ): TaskEither<L, A>;
-        voidLeft<L, A, B>(
-            functor: Functor<URI>,
-            fa: TaskEither<L, A>,
-            b: B,
-        ): TaskEither<L, B>;
+        voidRight<L, A, B>(functor: Functor<URI>, a: A, fb: TaskEither<L, B>): TaskEither<L, A>;
+        voidLeft<L, A, B>(functor: Functor<URI>, fa: TaskEither<L, A>, b: B): TaskEither<L, B>;
         flap(
             functor: Functor<URI>,
         ): <L, A, B>(ff: TaskEither<L, (a: A) => B>, a: A) => TaskEither<L, B>;
@@ -140,16 +123,10 @@ declare module 'fp-ts/lib/Apply' {
     interface Ops {
         applyFirst(
             apply: Apply<URI>,
-        ): <L, A, B>(
-            fa: TaskEither<L, A>,
-            fb: TaskEither<L, B>,
-        ) => TaskEither<L, A>;
+        ): <L, A, B>(fa: TaskEither<L, A>, fb: TaskEither<L, B>) => TaskEither<L, A>;
         applySecond(
             apply: Apply<URI>,
-        ): <L, A, B>(
-            fa: TaskEither<L, A>,
-            fb: TaskEither<L, B>,
-        ) => TaskEither<L, B>;
+        ): <L, A, B>(fa: TaskEither<L, A>, fb: TaskEither<L, B>) => TaskEither<L, B>;
         liftA2<A, B, C>(
             apply: Apply<URI>,
             f: Curried2<A, B, C>,
@@ -178,10 +155,7 @@ declare module 'fp-ts/lib/Applicative' {
     interface Ops {
         when(
             applicative: Applicative<URI>,
-        ): <L>(
-            condition: boolean,
-            fu: TaskEither<L, void>,
-        ) => TaskEither<L, void>;
+        ): <L>(condition: boolean, fu: TaskEither<L, void>) => TaskEither<L, void>;
     }
 }
 

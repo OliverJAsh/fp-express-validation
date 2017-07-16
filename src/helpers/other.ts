@@ -9,11 +9,7 @@ const parseNumber = (s: string): Option<number> => {
     const n = parseFloat(s);
     return isNaN(n) ? option.zero() : option.some(n);
 };
-export const NumberFromString = t.prism(
-    t.string,
-    parseNumber,
-    'NumberFromString',
-);
+export const NumberFromString = t.prism(t.string, parseNumber, 'NumberFromString');
 
 export const JSONFromString = t.prism(
     t.string,
@@ -21,11 +17,7 @@ export const JSONFromString = t.prism(
     'JSONFromString',
 );
 
-export const composeTypes = <A, B>(
-    fa: t.Type<A>,
-    fb: t.Type<B>,
-    name: string,
-): t.Type<B> => ({
+export const composeTypes = <A, B>(fa: t.Type<A>, fb: t.Type<B>, name: string): t.Type<B> => ({
     _A: t._A,
     name,
     validate: (v, c) => fa.validate(v, c).chain(a => fb.validate(a, c)),
