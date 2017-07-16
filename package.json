@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "tslint --project tsconfig.json --type-check",
     "compile": "tsc",
+    "start": "npm run compile && npm run lint && node ./target/example.js",
     "cleanTarget": "rm -rf ./target/*",
     "prepublishOnly": "npm run cleanTarget && npm run compile && npm run lint",
     "format": "prettier --write --tab-width 4 --print-width 100 --single-quote --trailing-comma all 'src/**/*.ts'"
